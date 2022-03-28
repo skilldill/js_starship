@@ -89,6 +89,8 @@ function renderStarship(x, y) {
     ctx.moveTo(x, y + 20);
     ctx.lineTo(x + 20, y + 25);
     ctx.stroke();
+
+    ctx.closePath();
 }
 
 function renderShots() {
@@ -118,7 +120,10 @@ function reRenderMeteors(meteors) {
     ctx.fillStyle= '#fff';
 
     meteors.map((meteor) => {
-        ctx.fillRect(meteor[0], meteor[1], 10, 10);
+        ctx.arc(meteor[0], meteor[1], 10, 0, 2 * Math.PI, false);
+        ctx.fill();
+        ctx.closePath();
+        // ctx.fillRect(meteor[0], meteor[1], 10, 10);
     })
 
     ctx.fillStyle= '#000';
