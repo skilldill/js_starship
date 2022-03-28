@@ -22,12 +22,37 @@ const SPACE_OBJECT_TYPES = {
 // { coords: [x, y], type: SPACE_OBJECT_TYPES }
 const spaceObjects = [];
 
-function generateSpaceObjects(count, type) {
+const spaceShipState = {
+    coords: [100, window.innerHeight / 2]
+}
+
+function renderSpaceShip(x, y) {
+    ctx.strokeStyle = '#fff';
+    ctx.fillStyle = '#fff';
+
+    ctx.beginPath();
+    ctx.fillRect(x, y, 40, 8);
+    
+    ctx.moveTo(x, y)
+    ctx.lineTo(x + 10, y - 20);
+    ctx.lineTo(x + 10, y + 28);
+    ctx.lineTo(x, y + 8);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.strokeRect(x + 10, y - 18, 5, 1);
+    ctx.strokeRect(x + 10, y + 26, 5, 1);
+
+    ctx.strokeRect(x + 10, y - 10, 15, 1);
+    ctx.strokeRect(x + 10, y + 18, 15, 1);
+}
+
+function generateSpaceObjects(count, type, xLimits = [0, window.innerWidth * 10], yLimits = [0, window.innerHeight] ) {
     for (let i = 0; i < count; i++) {
         spaceObjects.push({
             coords: [
-                getRandomInt(0, window.innerWidth * 10), 
-                getRandomInt(0, window.innerHeight)
+                getRandomInt(...xLimits), 
+                getRandomInt(...yLimits)
             ],
             type
         });
@@ -49,8 +74,10 @@ function renderStar(x, y) {
 }
 
 function renderPlanet(x, y) {
-    ctx.fillStyle = '#202020';
-    ctx.arc(x, y, 70, 0, 2 * Math.PI, false);
+    ctx.fillStyle = '#0d0d0d';
+
+    ctx.beginPath();
+    ctx.arc(x, y, 350, 0, 2 * Math.PI, false);
     ctx.closePath();
     ctx.fill();
 
@@ -58,13 +85,12 @@ function renderPlanet(x, y) {
 }
 
 function renderMeteor(x, y) {
-    // ctx.fillStyle = '#fff';
-    // ctx.arc(x, y, 10, 0, 2 * Math.PI, false);
-    // ctx.fill();
-    // ctx.closePath();
-
     ctx.fillStyle = '#fff';
-    ctx.fillRect(x, y, 10, 10);
+
+    ctx.beginPath();
+    ctx.arc(x, y, 10, 0, 2 * Math.PI, false);
+    ctx.fill();
+    ctx.closePath();
 
     ctx.fillStyle = '#000';
 }
@@ -93,7 +119,7 @@ function moveSpaceObjects() {
                 break;
 
             case SPACE_OBJECT_TYPES.PLANET:
-                spaceObject.coords[0] = spaceObject.coords[0] - (1 / 50);
+                spaceObject.coords[0] = spaceObject.coords[0] - 0.2;
                 break;
 
             case SPACE_OBJECT_TYPES.METEOR:
@@ -105,7 +131,7 @@ function moveSpaceObjects() {
 
 
 generateSpaceObjects(window.innerWidth * 6, SPACE_OBJECT_TYPES.STAR);
-generateSpaceObjects(2, SPACE_OBJECT_TYPES.PLANET);
+generateSpaceObjects(1, SPACE_OBJECT_TYPES.PLANET, [window.innerWidth - 100, window.innerWidth], [-100, 20]);
 generateSpaceObjects(20, SPACE_OBJECT_TYPES.METEOR);
 
 reRenderScene();
@@ -116,4 +142,5 @@ setInterval(() => {
     moveSpaceObjects();
     reRenderScene();
     reRenderSpaceObjects();
+    renderSpaceShip(...spaceShipState.coords)
 }, 10)
