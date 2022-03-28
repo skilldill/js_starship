@@ -23,7 +23,8 @@ const SPACE_OBJECT_TYPES = {
 const spaceObjects = [];
 
 const spaceShipState = {
-    coords: [100, window.innerHeight / 2]
+    coords: [100, window.innerHeight / 2],
+    shots: []
 }
 
 function renderSpaceShip(x, y) {
@@ -33,18 +34,44 @@ function renderSpaceShip(x, y) {
     ctx.beginPath();
     ctx.fillRect(x, y, 40, 8);
     
-    ctx.moveTo(x, y)
-    ctx.lineTo(x + 10, y - 20);
-    ctx.lineTo(x + 10, y + 28);
-    ctx.lineTo(x, y + 8);
+    // Tail
+    ctx.moveTo(x, y + 4);
+    ctx.lineTo(x - 10, y - 15);
+    ctx.lineTo(x + 15, y + 4);
+    ctx.lineTo(x - 10, y + 23);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Flys
+    ctx.beginPath();
+    ctx.moveTo(x + 5, y + 4);
+    ctx.lineTo(x + 30, y - 40);
+    ctx.lineTo(x + 25, y + 4);
+    ctx.lineTo(x + 30, y + 48);
     ctx.closePath();
     ctx.fill();
 
-    ctx.strokeRect(x + 10, y - 18, 5, 1);
-    ctx.strokeRect(x + 10, y + 26, 5, 1);
+    // Cabine
+    ctx.beginPath();
+    ctx.moveTo(x + 25, y + 4);
+    ctx.lineTo(x + 25, y - 5);
+    ctx.lineTo(x + 80, y + 4);
+    ctx.lineTo(x + 25, y + 13);
+    ctx.closePath();
+    ctx.fill();
 
-    ctx.strokeRect(x + 10, y - 10, 15, 1);
-    ctx.strokeRect(x + 10, y + 18, 15, 1);
+    // Blasters
+    ctx.beginPath();
+    ctx.moveTo(x + 25, y - 20);
+    ctx.lineTo(x + 45, y - 20);
+    ctx.stroke();
+    ctx.closePath();
+
+    ctx.beginPath();
+    ctx.moveTo(x + 25, y + 28);
+    ctx.lineTo(x + 45, y + 28);
+    ctx.stroke();
+    ctx.closePath();
 }
 
 function generateSpaceObjects(count, type, xLimits = [0, window.innerWidth * 10], yLimits = [0, window.innerHeight] ) {
@@ -129,9 +156,36 @@ function moveSpaceObjects() {
     })
 }
 
+function moveShots() {
+    spaceShipState.shots.forEach((shot) => {
+        shot[0] = shot[0] + 5;
+    })
+}
+
+function reRenderShots(shots) {
+    ctx.fillStyle = '#f00';
+
+    shots.forEach((shot) => {
+        ctx.fillRect(shot[0], shot[1], 5, 2);
+    })
+
+    ctx.fillStyle = '#000';
+}
+
+function checkSuccessShots(shots) {
+    const meteors = spaceObjects.filter(({ type }) => type === SPACE_OBJECT_TYPES.METEOR);
+
+    meteors.map((meteor) => {
+        const foundIndex = shots.findIndex((shot) => shot[0] >= meteor.coords[0] - 10 && shot[0] <= meteor.coords[0] + 20); 
+
+        if (foundIndex > -1 && shots[foundIndex][1] >= meteor.coords[1] - 10 && shots[foundIndex][1] <= meteor.coords[1] + 20) {
+            meteor.coords[0] = -10;
+        }
+    })
+}
 
 generateSpaceObjects(window.innerWidth * 6, SPACE_OBJECT_TYPES.STAR);
-generateSpaceObjects(1, SPACE_OBJECT_TYPES.PLANET, [window.innerWidth - 100, window.innerWidth], [-100, 20]);
+generateSpaceObjects(1, SPACE_OBJECT_TYPES.PLANET, [window.innerWidth - 100, window.innerWidth], [-100, 0]);
 generateSpaceObjects(20, SPACE_OBJECT_TYPES.METEOR);
 
 reRenderScene();
@@ -140,7 +194,22 @@ reRenderSpaceObjects();
 // GAME LIFECIRCLE
 setInterval(() => {
     moveSpaceObjects();
+    moveShots();
+
+    checkSuccessShots(spaceShipState.shots);
+
     reRenderScene();
     reRenderSpaceObjects();
-    renderSpaceShip(...spaceShipState.coords)
+    renderSpaceShip(...spaceShipState.coords);
+    reRenderShots(spaceShipState.shots);
 }, 10)
+
+canvas.addEventListener('mousemove', (event) => {
+    const { clientY } = event;
+    spaceShipState.coords[1] = clientY;
+})
+
+canvas.addEventListener('click', () => {
+    spaceShipState.shots.push([spaceShipState.coords[0] + 45, spaceShipState.coords[1] - 20]);
+    spaceShipState.shots.push([spaceShipState.coords[0] + 45, spaceShipState.coords[1] + 28]);
+})
